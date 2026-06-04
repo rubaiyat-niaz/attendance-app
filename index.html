@@ -1,119 +1,358 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <base target="_top">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     html, body { height: 100%; margin: 0; padding: 0; }
-    body { font-family: Montserrat; background: #7CBFB6; }
-    .container { width: 100%; height: 100vh; display: table; }
-    .center { display: table-cell; vertical-align: middle; text-align: center; }
+    body {
+      font-family: Montserrat, sans-serif;
+      background: #7CBFB6;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      box-sizing: border-box;
+    }
     .card {
-      display: inline-block; width: 100%; max-width: 420px;
-      background: #51AED6; padding: 20px; border-radius: 12px;
+      width: 100%;
+      max-width: 420px;
+      background: #51AED6;
+      padding: 24px 20px;
+      border-radius: 12px;
       box-shadow: 0 2px 12px rgba(0,0,0,0.12);
-      box-sizing: border-box; text-align: left;
     }
     .logo { text-align: center; margin-bottom: 5px; }
     .logo img { width: 150px; height: 80px; object-fit: contain; }
-    h2 { text-align: center; margin-top: 5px; margin-bottom: 15px; color: white; }
-    select, button {
-      width: 100%; padding: 12px; margin-top: 12px;
-      border-radius: 8px; font-size: 16px; box-sizing: border-box;
+    h2 {
+      text-align: center;
+      margin: 5px 0 18px;
+      color: white;
+      font-size: 17px;
     }
-    button { background: #0B57D0; color: white; border: none; cursor: pointer; }
-    button:hover { opacity: 0.9; }
-    #msg { margin-top: 15px; text-align: center; font-weight: bold; }
+    label {
+      display: block;
+      color: white;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      margin-top: 12px;
+    }
+    select, textarea {
+      width: 100%;
+      padding: 11px 12px;
+      border-radius: 8px;
+      border: none;
+      font-size: 15px;
+      font-family: Montserrat, sans-serif;
+      box-sizing: border-box;
+      background: white;
+      color: #333;
+      outline: none;
+    }
+    select:disabled { background: #e0e0e0; color: #999; }
+    textarea {
+      resize: vertical;
+      min-height: 75px;
+    }
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+    }
+    button {
+      flex: 1;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-family: Montserrat, sans-serif;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    #loginBtn  { background: #0B57D0; color: white; }
+    #logoutBtn { background: #1a7a4a; color: white; }
+    button:hover    { opacity: 0.88; }
+    button:disabled { opacity: 0.55; cursor: not-allowed; }
+    #msg {
+      margin-top: 14px;
+      text-align: center;
+      font-weight: 600;
+      font-size: 13px;
+      color: white;
+      min-height: 18px;
+    }
+    .hidden { display: none; }
   </style>
 </head>
 <body>
+<div class="card">
 
-<div class="container">
-  <div class="center">
-    <div class="card">
-      <div class="logo">
-        <img src="https://drive.google.com/thumbnail?id=11YuGg_fD4HYWwF2e0WxXV5638WWIRF2O">
-      </div>
-      <h2>Accountant Attendance</h2>
-      <select id="employee">
-        <option value="">Select Employee</option>
-      </select>
-      <select id="shift">
-        <option value="">Select Shift</option>
-      </select>
-      <button onclick="send('Login')">Login</button>
-      <button onclick="send('Logout')">Logout</button>
-      <div id="msg"></div>
-    </div>
+  <div class="logo">
+    <img src="https://drive.google.com/thumbnail?id=11YuGg_fD4HYWwF2e0WxXV5638WWIRF2O">
   </div>
+
+  <h2>MedEasy Attendance</h2>
+
+  <!-- 1. Department -->
+  <label>Department</label>
+  <select id="department" onchange="onDepartmentChange()">
+    <option value="">Select Department</option>
+    <option value="Accounts">Accounts</option>
+    <option value="Sales">Sales</option>
+    <option value="CSE">CSE</option>
+    <option value="CSE MNG">CSE MNG</option>
+  </select>
+
+  <!-- 2. Employee Name -->
+  <label>Employee Name</label>
+  <select id="employee" disabled>
+    <option value="">Select Department First</option>
+  </select>
+
+  <!-- 3. Shift -->
+  <label>Shift</label>
+  <select id="shift" disabled>
+    <option value="">Select Department First</option>
+  </select>
+
+  <!-- Late remarks — hidden by default, CSE only -->
+  <label id="remarksLabel" class="hidden">Reason for Late Attendance</label>
+  <textarea id="remarks" class="hidden"
+    placeholder="Please explain your reason for late login..."></textarea>
+
+  <div class="btn-row">
+    <button id="loginBtn"  onclick="send('Login')">Login</button>
+    <button id="logoutBtn" onclick="send('Logout')">Logout</button>
+  </div>
+
+  <div id="msg"></div>
+
 </div>
 
 <script>
   // ✅ PASTE YOUR APPS SCRIPT WEB APP URL HERE
-  const API_URL = "https://script.google.com/macros/s/AKfycbyzOAHk-KE3xrBN0dyWb_h_-iqUtIKCZooLPAaqf2t2QAQTMJmp9Chl2gxLLYEzuPIiKQ/exec";
+  const API_URL    = "https://script.google.com/macros/s/AKfycbwGHxm1p79HuzI9qcdHvZguxv-IHvmZk4NeE5RelGAZFG0FjuPpr1ax5wT3tF1mwQDg/exec";
+  const ALLOWED_IP = "103.112.53.227";
+  const IP_RESTRICTED = ["CSE", "CSE MNG", "Sales"];
 
-  async function loadData() {
+  const SHIFT_OPTIONS = {
+    "Accounts": ["Morning", "Evening", "Regular"],
+    "Sales":    ["Regular"],
+    "CSE":      ["Morning (7:30 - 3:30)", "Evening (3:30 - 11:30)", "Night (11:30 - 7:30)"],
+    "CSE MNG":  ["Morning (7:30 - 3:30)", "Evening (3:30 - 11:30)", "Night (11:30 - 7:30)"]
+  };
+
+  let clientIp = "";
+
+  // ── Init ──────────────────────────────────────────────────
+  async function init() {
     try {
-      const empRes = await fetch(API_URL + "?action=getEmployees");
-      const employees = await empRes.json();
-      const eSelect = document.getElementById("employee");
-      employees.forEach(r => {
-        let o = document.createElement("option");
-        o.value = r[0]; o.text = r[0];
-        eSelect.appendChild(o);
-      });
-
-      const shiftRes = await fetch(API_URL + "?action=getShifts");
-      const shifts = await shiftRes.json();
-      const sSelect = document.getElementById("shift");
-      shifts.forEach(r => {
-        let o = document.createElement("option");
-        o.value = r[0]; o.text = r[0];
-        sSelect.appendChild(o);
-      });
-    } catch (err) {
-      document.getElementById("msg").innerHTML = "Failed to load data";
+      const res  = await fetch("https://api.ipify.org?format=json");
+      const data = await res.json();
+      clientIp   = data.ip;
+    } catch(e) {
+      clientIp = "";
     }
   }
 
-  function send(type) {
-    const employee = document.getElementById("employee").value;
-    const shift = document.getElementById("shift").value;
+  // ── Department change ─────────────────────────────────────
+  async function onDepartmentChange() {
+    const dept     = document.getElementById("department").value;
+    const empSel   = document.getElementById("employee");
+    const shiftSel = document.getElementById("shift");
 
-    if (!employee || !shift) {
-      document.getElementById("msg").innerHTML = "Please select employee and shift";
+    empSel.innerHTML   = '<option value="">Loading...</option>';
+    shiftSel.innerHTML = '<option value="">Select Shift</option>';
+    empSel.disabled    = true;
+    shiftSel.disabled  = true;
+    hideRemarks();
+    setMsg("");
+
+    if (!dept) {
+      empSel.innerHTML   = '<option value="">Select Department First</option>';
+      shiftSel.innerHTML = '<option value="">Select Department First</option>';
       return;
     }
 
-    document.getElementById("msg").innerHTML = "Getting location...";
+    // Load employees for selected department only
+    try {
+      const res       = await fetch(API_URL + "?action=getEmployeesByDept&dept=" +
+                          encodeURIComponent(dept));
+      const employees = await res.json();
 
-    navigator.geolocation.getCurrentPosition(async function(pos) {
-      document.getElementById("msg").innerHTML = "Processing...";
-      try {
-        const res = await fetch(API_URL, {
-          method: "POST",
-          body: JSON.stringify({
-            action: "submitAttendance",
-            employeeName: employee,
-            shiftTime: shift,
-            actionType: type,
-            lat: pos.coords.latitude,
-            lng: pos.coords.longitude
-          })
+      empSel.innerHTML = '<option value="">Select Employee</option>';
+      if (employees.length === 0) {
+        empSel.innerHTML = '<option value="">No employees found</option>';
+      } else {
+        employees.forEach(function(r) {
+          const o = document.createElement("option");
+          o.value = r[0];
+          o.text  = r[0];
+          empSel.appendChild(o);
         });
-        const data = await res.json();
-        document.getElementById("msg").innerHTML = data.message;
-      } catch (err) {
-        document.getElementById("msg").innerHTML = "Submission failed";
+        empSel.disabled = false;
       }
-    },
-    function() {
-      document.getElementById("msg").innerHTML = "Location permission denied";
+    } catch(e) {
+      empSel.innerHTML = '<option value="">Failed to load</option>';
+      setMsg("⚠️ Could not load employees");
+    }
+
+    // Populate shifts
+    const shifts = SHIFT_OPTIONS[dept] || [];
+    shiftSel.innerHTML = '<option value="">Select Shift</option>';
+    shifts.forEach(function(s) {
+      const o = document.createElement("option");
+      o.value = s;
+      o.text  = s;
+      shiftSel.appendChild(o);
     });
+    shiftSel.disabled = false;
   }
 
-  loadData();
+  // ── Send ──────────────────────────────────────────────────
+  async function send(type) {
+    const dept     = document.getElementById("department").value;
+    const employee = document.getElementById("employee").value;
+    const shift    = document.getElementById("shift").value;
+    const remarks  = document.getElementById("remarks").value.trim();
+
+    if (!dept || !employee || !shift) {
+      setMsg("⚠️ Please select department, employee and shift");
+      return;
+    }
+
+    // IP restriction
+    if (IP_RESTRICTED.includes(dept)) {
+      if (!clientIp) {
+        setMsg("⚠️ Could not verify your network. Please try again.");
+        return;
+      }
+      if (clientIp !== ALLOWED_IP) {
+        setMsg("❌ Access denied. You must be on the office network.");
+        return;
+      }
+    }
+
+    // Late check for CSE only (client side for instant feedback)
+    if (type === "Login" &&
+        (dept === "CSE" || dept === "CSE MNG") &&
+        isLateLogin(shift) &&
+        !remarks) {
+      showRemarks();
+      setMsg("⚠️ You are late. Please enter a reason before logging in.");
+      return;
+    }
+
+    const needsLocation = (dept === "Accounts");
+
+    if (needsLocation) {
+      // Accounts — get GPS first
+      setMsg("Getting location...");
+      setBtns(true);
+
+      navigator.geolocation.getCurrentPosition(
+        async function(pos) {
+          if (pos.coords.accuracy > 1000) {
+            setMsg("⚠️ GPS accuracy too low. Please enable GPS and try again.");
+            setBtns(false);
+            return;
+          }
+          await submitToServer(
+            dept, employee, shift, type, remarks,
+            pos.coords.latitude, pos.coords.longitude
+          );
+        },
+        function() {
+          setMsg("❌ Location permission denied. Please allow location access.");
+          setBtns(false);
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      );
+
+    } else {
+      // CSE, CSE MNG, Sales — skip GPS
+      setBtns(true);
+      setMsg("Processing...");
+      await submitToServer(dept, employee, shift, type, remarks, null, null);
+    }
+  }
+
+  // ── Submit to server ──────────────────────────────────────
+  async function submitToServer(dept, employee, shift, type, remarks, lat, lng) {
+    try {
+      const res = await fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify({
+          action:       "submitAttendance",
+          employeeName: employee,
+          department:   dept,
+          shiftTime:    shift,
+          actionType:   type,
+          lat:          lat,
+          lng:          lng,
+          remarks:      remarks
+        })
+      });
+
+      const data = await res.json();
+
+      if (data.message === "LATE_NO_REMARKS") {
+        showRemarks();
+        setMsg("⚠️ You are late. Please enter a reason before logging in.");
+        setBtns(false);
+        return;
+      }
+
+      setMsg(data.message);
+      if (data.message.includes("✅")) hideRemarks();
+
+    } catch(err) {
+      setMsg("❌ Submission failed. Please try again.");
+    }
+
+    setBtns(false);
+  }
+
+  // ── Late login check ──────────────────────────────────────
+  function isLateLogin(shiftName) {
+    const map = {
+      "Morning (7:30 - 3:30)":  { h: 7,  m: 30 },
+      "Evening (3:30 - 11:30)": { h: 15, m: 30 },
+      "Night (11:30 - 7:30)":   { h: 23, m: 30 }
+    };
+    const s = map[shiftName];
+    if (!s) return false;
+    const now        = new Date();
+    const shiftStart = new Date();
+    shiftStart.setHours(s.h, s.m, 0, 0);
+    return (now - shiftStart) / 60000 > 10;
+  }
+
+  // ── Helpers ───────────────────────────────────────────────
+  function showRemarks() {
+    document.getElementById("remarks").classList.remove("hidden");
+    document.getElementById("remarksLabel").classList.remove("hidden");
+  }
+
+  function hideRemarks() {
+    document.getElementById("remarks").classList.add("hidden");
+    document.getElementById("remarksLabel").classList.add("hidden");
+    document.getElementById("remarks").value = "";
+  }
+
+  function setMsg(txt) {
+    document.getElementById("msg").innerHTML = txt;
+  }
+
+  function setBtns(disabled) {
+    document.getElementById("loginBtn").disabled  = disabled;
+    document.getElementById("logoutBtn").disabled = disabled;
+  }
+
+  init();
 </script>
 </body>
 </html>
